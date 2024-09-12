@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "start": "node --experimental-modules index.mjs"
+  },
   "devDependencies": {
     "@types/node": "^22.5.4"
   }
