@@ -1,37 +1,60 @@
-/* setTimeout */
-// const timer = setTimeout(() => {
-//   console.log('setTimeout');
-// }, 0);
-// console.log(timer); // 在node环境中为 object 类型      在浏览器环境中为 number 类型
+/** 模块的查找 **/
+/* 绝对路径 */
+// require("D:\\Duyi frontend\\node\\node-practiceNotes\\a.js");
 
-/* setImmediate */
-// setImmediate 相当于 setTimeout(() => { }, 0);
-// const immediate = setImmediate(() => {
-//   console.log('setImmediate');
-// });
+/* 相对路径  ./  或 ../ (最终还是会转换成绝对路径) */
+// require("./a");
 
-/* __dirname */
-// console.log(__dirname); // 当前文件所在的目录
+/* 相对路径 
+1. 检查是否是内置模块，如：fs、path等
+2. 检查当前目录中的node_modules
+3. 检查上级目录中的node_modules
+4. 转换为绝对路径
+5. 加载模块
+*/
+// require('test_abc');
 
-/* __filename */
-// console.log(__filename); // 当前文件的绝对路径
+/* 根据js、json、node、mjs顺序自动补全后缀名字 */
+// require('./b');
 
-/* buffer */
-// const buffer = Buffer.from('abcdefg', "utf-8");
-// console.log(buffer);
+/* 会自动找src下面的index.js文件 */
+// require('./src');
 
-/* process */
-// console.log("当前命令行: ", process.cwd()); // 当前命令行所在的目录
+// require('test_def');
 
-// setTimeout(() => {
-//   console.log('abc');
-// }, 15000)
-// process.exit(); // 退出当前进程
+// require('./src')
 
-// console.log(process.argv); // 获取命令行参数
+// console.log(require.resolve('./src'));
 
-// console.log(process.platform); // 获取当前系统平台
+/*
+function require(modulePath) {
+  // 1. 将modulePath转换为绝对路径: D:\Duyi frontend\node\node-practiceNotes\myModule.js
+  // 2. 判断是否该模块已有缓存
+  if(require.cache["D:\\Duyi frontend\\node\\node-practiceNotes\\myModule.js"]) {
+    return require.cache["D:\\Duyi frontend\\node\\node-practiceNotes\\myModule.js"].result;
+  }
 
-// process.kill(1234); // 杀死进程, 参数为进程id
+  // 3. 读取文件内容
+  // 4. 包裹到一个函数中
+  function __temp(module, exports, require, __dirname, __filename) {
+    console.log("当前模块路径: ", __dirname);
+    console.log("当前模块文件: ", __filename);
+    this.m = 5;
+    exports.c = 6;
+    module.exports = {
+      a: 1,
+      b: 2
+    }
+  }
 
-console.log(process.env); // 获取环境变量
+  // 5. 创建module对象
+  module.exports = {};
+  let exports = module.exports;
+  __temp.call(module.exports, module, exports, require , module.path, module.filename)
+
+  return module.exports;
+}
+*/
+
+const result = require('./myModule');
+console.log(result);

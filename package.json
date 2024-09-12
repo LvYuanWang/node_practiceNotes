@@ -1,4 +1,7 @@
 {
+  "name": "node-practice",
+  "version": "1.0.0",
+  "main": "index.js",
   "devDependencies": {
     "@types/node": "^22.5.4"
   }
