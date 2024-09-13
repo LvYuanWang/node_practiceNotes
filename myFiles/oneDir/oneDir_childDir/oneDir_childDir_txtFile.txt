@@ -1,0 +1,1 @@
+myFiles/oneDir/oneDir_childDir/oneDir_childDir_txtFile.txt

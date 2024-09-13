@@ -1,37 +1,78 @@
-/* setTimeout */
-// const timer = setTimeout(() => {
-//   console.log('setTimeout');
-// }, 0);
-// console.log(timer); // 在node环境中为 object 类型      在浏览器环境中为 number 类型
+// 练习: 读取一个目录中的所有子目录和文件
+const fs = require('fs');
+const path = require('path');
 
-/* setImmediate */
-// setImmediate 相当于 setTimeout(() => { }, 0);
-// const immediate = setImmediate(() => {
-//   console.log('setImmediate');
-// });
+class File {
+  #dirSize = 0;
+  constructor(filename, name, ext, isFile, size, createTime, updateTime) {
+    this.filename = filename;
+    this.name = name;
+    this.ext = ext;
+    this.isFile = isFile;
+    this.size = size;
+    this.createTime = createTime;
+    this.updateTime = updateTime;
+  }
 
-/* __dirname */
-// console.log(__dirname); // 当前文件所在的目录
+  async getChildren() {
+    if (this.isFile) return [];
+    let childrenFiles = await fs.promises.readdir(this.filename);
+    childrenFiles = childrenFiles.map(child => {
+      const childPath = path.resolve(this.filename, child);
+      return File.getFile(childPath);
+    })
+    return Promise.all(childrenFiles);
+  }
 
-/* __filename */
-// console.log(__filename); // 当前文件的绝对路径
+  async getContent(isBuffer = false) {
+    return this.isFile ? isBuffer ? await fs.promises.readFile(this.filename) : await fs.promises.readFile(this.filename, "utf-8") : null;
+  }
 
-/* buffer */
-// const buffer = Buffer.from('abcdefg', "utf-8");
-// console.log(buffer);
+  static async getFile(dirname) {
+    const fileAttribute = await fs.promises.stat(dirname);
+    const name = path.basename(dirname);
+    const ext = path.extname(dirname);
+    const isFile = fileAttribute.isFile();
+    const size = fileAttribute.isFile() ? fileAttribute.size : await this.getChildrenFilesSize(dirname);
+    const createTime = new Date(fileAttribute.birthtime).toLocaleString();
+    const updateTime = new Date(fileAttribute.mtime).toLocaleString();
+    return new File(dirname, name, ext, isFile, size, createTime, updateTime);
+  }
 
-/* process */
-// console.log("当前命令行: ", process.cwd()); // 当前命令行所在的目录
+  static async getChildrenFilesSize(dirname) {
+    let dirSize = 0;
+    const childrenFiles = await fs.promises.readdir(dirname);
+    for (const child of childrenFiles) {
+      const childPath = path.resolve(dirname, child);
+      const childFileAttribute = await fs.promises.stat(childPath);
+      if (childFileAttribute.isFile()) {
+        dirSize = dirSize + childFileAttribute.size;
+      } else {
+        dirSize += await File.getChildrenFilesSize(childPath);
+      }
+    }
+    return dirSize;
+  }
+}
 
-// setTimeout(() => {
-//   console.log('abc');
-// }, 15000)
-// process.exit(); // 退出当前进程
+async function readDir(dirname) {
+  const fileProperty = await File.getFile(dirname);
+  return await fileProperty.getChildren();
+}
 
-// console.log(process.argv); // 获取命令行参数
+async function test() {
+  const dirname = path.resolve(__dirname, './myFiles');
+  const files = await readDir(dirname);
+  console.log(files);
+  const filesDir = await files[4].getChildren();
+  console.log(filesDir);
+  console.log(await filesDir[0].getContent());
+}
+test();
 
-// console.log(process.platform); // 获取当前系统平台
-
-// process.kill(1234); // 杀死进程, 参数为进程id
-
-console.log(process.env); // 获取环境变量
+// async function getSize() {
+//   const dirname = path.resolve(__dirname, './myFiles');
+//   const dirSize = await File.getChildrenFilesSize(dirname);
+//   console.log(dirSize);
+// }
+// getSize();
