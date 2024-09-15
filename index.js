@@ -1,37 +1,22 @@
-/* setTimeout */
-// const timer = setTimeout(() => {
-//   console.log('setTimeout');
-// }, 0);
-// console.log(timer); // 在node环境中为 object 类型      在浏览器环境中为 number 类型
+const fs = require('fs');
+const path = require('path');
 
-/* setImmediate */
-// setImmediate 相当于 setTimeout(() => { }, 0);
-// const immediate = setImmediate(() => {
-//   console.log('setImmediate');
-// });
+const from = path.resolve(__dirname, './temp/writeStreamTest.txt');
+const to = path.resolve(__dirname, './temp/writeStreamTestCopy.txt');
 
-/* __dirname */
-// console.log(__dirname); // 当前文件所在的目录
+// 将 from 文件内容写入到 to 文件中
 
-/* __filename */
-// console.log(__filename); // 当前文件的绝对路径
+// 方法二
+function method2() {
+  const rs = fs.createReadStream(from);
+  const ws = fs.createWriteStream(to);
 
-/* buffer */
-// const buffer = Buffer.from('abcdefg', "utf-8");
-// console.log(buffer);
+  console.time("method2");
 
-/* process */
-// console.log("当前命令行: ", process.cwd()); // 当前命令行所在的目录
+  rs.pipe(ws);  // pipe() 方法可以将可读流中的内容直接输出到可写流中, 并且会解决背压问题
 
-// setTimeout(() => {
-//   console.log('abc');
-// }, 15000)
-// process.exit(); // 退出当前进程
-
-// console.log(process.argv); // 获取命令行参数
-
-// console.log(process.platform); // 获取当前系统平台
-
-// process.kill(1234); // 杀死进程, 参数为进程id
-
-console.log(process.env); // 获取环境变量
+  rs.on('close', () => {
+    console.timeEnd("method2");
+  })
+}
+method2();
