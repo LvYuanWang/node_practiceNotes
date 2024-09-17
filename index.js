@@ -1,37 +1,45 @@
-/* setTimeout */
-// const timer = setTimeout(() => {
-//   console.log('setTimeout');
-// }, 0);
-// console.log(timer); // 在node环境中为 object 类型      在浏览器环境中为 number 类型
+const net = require('net');
+const fs = require('fs');
+const path = require('path');
 
-/* setImmediate */
-// setImmediate 相当于 setTimeout(() => { }, 0);
-// const immediate = setImmediate(() => {
-//   console.log('setImmediate');
-// });
+// 创建服务器
+const server = net.createServer();
 
-/* __dirname */
-// console.log(__dirname); // 当前文件所在的目录
+server.listen(9527);
 
-/* __filename */
-// console.log(__filename); // 当前文件的绝对路径
+// 监听端口后触发的事件
+server.on('listening', () => {
+  console.log('服务器已启动');
+})
 
-/* buffer */
-// const buffer = Buffer.from('abcdefg', "utf-8");
-// console.log(buffer);
+// 当连接到当前服务器时触发的事件
+// server.on('connection', socket => {
+//   console.log('有新的连接加入进来了');
+//   // console.log(socket);  // socket对象
+//   socket.on('data', chunk => {
+//     console.log('来自客户端的消息：', chunk.toString('utf-8'));
+//   })
+//   socket.write(`HTTP/1.1 200 OK
+// Content-Type: text/html
 
-/* process */
-// console.log("当前命令行: ", process.cwd()); // 当前命令行所在的目录
+// <h1 style="color: blue;">Hello World</h1>`);
+//   socket.end();
 
-// setTimeout(() => {
-//   console.log('abc');
-// }, 15000)
-// process.exit(); // 退出当前进程
+//   socket.on('close', () => {
+//     console.log('连接关闭');
+//   })
+// })
 
-// console.log(process.argv); // 获取命令行参数
+// 响应一张图片
+const imgPath = path.resolve(__dirname, './images/wallpaper.jpg');
+server.on('connection', async socket => {
+  const imgBuffer = await fs.promises.readFile(imgPath);
+  const head = `HTTP/1.1 200 OK
+Content-Type: image/jpeg
 
-// console.log(process.platform); // 获取当前系统平台
-
-// process.kill(1234); // 杀死进程, 参数为进程id
-
-console.log(process.env); // 获取环境变量
+`;
+  // Buffer.from(): 将字符串转换为Buffer对象
+  const responseContent = Buffer.concat([Buffer.from(head), imgBuffer]);
+  socket.write(responseContent);
+  socket.end();
+})
