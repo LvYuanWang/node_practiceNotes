@@ -1,37 +1,52 @@
-/* setTimeout */
-// const timer = setTimeout(() => {
-//   console.log('setTimeout');
-// }, 0);
-// console.log(timer); // 在node环境中为 object 类型      在浏览器环境中为 number 类型
+// http模块
+const http = require('http');
+const URL = require('url');
+const path = require('path');
+const fs = require('fs');
 
-/* setImmediate */
-// setImmediate 相当于 setTimeout(() => { }, 0);
-// const immediate = setImmediate(() => {
-//   console.log('setImmediate');
-// });
+/**
+ * 判断文件是否存在
+ */
+async function exists(pathname) {
+  try {
+    return await fs.promises.stat(pathname);
+  } catch (error) {
+    return null;
+  }
+}
 
-/* __dirname */
-// console.log(__dirname); // 当前文件所在的目录
+/**
+ * 获取请求内容详情
+ */
+async function getRequestDetailContent(url) {
+  const urlObj = URL.parse(url);
+  const pathname = urlObj.pathname.substring(1);
+  let dirname = path.resolve(__dirname, "public", pathname);
+  let stat = await exists(dirname);
+  if (!stat) {
+    return null;
+  } else if (stat.isDirectory()) {
+    dirname = path.resolve(__dirname, "public", pathname, "index.html");
+    stat = await exists(dirname);
+    if (!stat) {
+      return null;
+    } else {
+      return await fs.promises.readFile(dirname);
+    }
+  } else {
+    return await fs.promises.readFile(dirname);
+  }
+}
 
-/* __filename */
-// console.log(__filename); // 当前文件的绝对路径
+const server = http.createServer(async (req, res) => {
+  const fileContent = await getRequestDetailContent(req.url);
+  const errorPage = await fs.promises.readFile(path.resolve(__dirname, "public", "404.html"));
+  !fileContent && (res.statusCode = 404, res.write(errorPage)) || res.write(fileContent);
+  res.end();
+})
 
-/* buffer */
-// const buffer = Buffer.from('abcdefg', "utf-8");
-// console.log(buffer);
+server.listen(9527);
 
-/* process */
-// console.log("当前命令行: ", process.cwd()); // 当前命令行所在的目录
-
-// setTimeout(() => {
-//   console.log('abc');
-// }, 15000)
-// process.exit(); // 退出当前进程
-
-// console.log(process.argv); // 获取命令行参数
-
-// console.log(process.platform); // 获取当前系统平台
-
-// process.kill(1234); // 杀死进程, 参数为进程id
-
-console.log(process.env); // 获取环境变量
+server.on('listening', () => {
+  console.log('listening port in 9527...');
+})
