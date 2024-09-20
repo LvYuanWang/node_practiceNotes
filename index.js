@@ -1,5 +1,5 @@
 // http模块
-const http = require('http');
+const https = require('https');
 const URL = require('url');
 const path = require('path');
 const fs = require('fs');
@@ -38,15 +38,18 @@ async function getRequestDetailContent(url) {
   }
 }
 
-const server = http.createServer(async (req, res) => {
+const server = https.createServer({
+  key: fs.readFileSync(path.resolve(__dirname, "./server-key.pem")),  // 私钥
+  cert: fs.readFileSync(path.resolve(__dirname, "./server-cert.crt")), // 证书
+}, async (req, res) => {
   const fileContent = await getRequestDetailContent(req.url);
   const errorPage = await fs.promises.readFile(path.resolve(__dirname, "public", "404.html"));
   !fileContent && (res.statusCode = 404, res.write(errorPage)) || res.write(fileContent);
   res.end();
 })
 
-server.listen(9527);
+server.listen(443);
 
 server.on('listening', () => {
-  console.log('listening port in 9527...');
+  console.log('listening port in 443...');
 })
