@@ -1,1 +1,1 @@
-## Node全局对象
+## EventEmitter
